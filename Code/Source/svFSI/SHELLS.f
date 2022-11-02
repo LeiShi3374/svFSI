@@ -44,21 +44,24 @@
       REAL(KIND=RKIND), INTENT(IN) :: Ag(tDof,tnNo), Yg(tDof,tnNo),
      2   Dg(tDof,tnNo)
 
-      INTEGER(KIND=IKIND) a, b, e, g, Ac, eNoN, cPhys
+      INTEGER(KIND=IKIND) a, b, e, g, Ac, eNoN, cPhys, iFn, nFn
 
       INTEGER(KIND=IKIND), ALLOCATABLE :: ptr(:)
       REAL(KIND=RKIND), ALLOCATABLE :: xl(:,:), al(:,:), yl(:,:),
-     2   dl(:,:), bfl(:,:), lR(:,:), lK(:,:,:)
+     2   dl(:,:), bfl(:,:), fN(:,:), lR(:,:), lK(:,:,:)
 
       eNoN = lM%eNoN
       IF (lM%eType .EQ. eType_TRI3) eNoN = 2*eNoN
+
+      nFn  = lM%nFn
+      IF (nFn .EQ. 0) nFn = 1
 
 !     Initialize tensor operations
       CALL TEN_INIT(2)
 
 !     SHELLS: dof = nsd
       ALLOCATE(ptr(eNoN), xl(nsd,eNoN), al(tDof,eNoN), yl(tDof,eNoN),
-     2   dl(tDof,eNoN), bfl(nsd,eNoN), lR(dof,eNoN),
+     2   dl(tDof,eNoN), bfl(nsd,eNoN), fN(3,nFn), lR(dof,eNoN),
      3   lK(dof*dof,eNoN,eNoN))
 
 !     Loop over all elements of mesh
@@ -74,6 +77,7 @@
          yl  = 0._RKIND
          dl  = 0._RKIND
          bfl = 0._RKIND
+         fN   = 0._RKIND
          DO a=1, eNoN
             IF (a .LE. lM%eNoN) THEN
                Ac = lM%IEN(a,e)
@@ -89,6 +93,11 @@
             yl(:,a)  = Yg(:,Ac)
             dl(:,a)  = Dg(:,Ac)
             bfl(:,a) = Bf(:,Ac)
+            IF (ALLOCATED(lM%fN)) THEN
+               DO iFn=1, nFn
+                  fN(:,iFn) = lM%fN((iFn-1)*nsd+1:iFn*nsd,e)
+               END DO
+            END IF
          END DO
 
          IF (lM%eType .EQ. eType_TRI3) THEN
@@ -104,7 +113,8 @@
 
 !           Gauss integration
             DO g=1, lM%nG
-               CALL SHELL3D(lM, g, eNoN, al, yl, dl, xl, bfl, lR, lK)
+               CALL SHELL3D(lM, g, eNoN, nFn, fN, al, yl, dl, xl, 
+     2               bfl, lR, lK)
             END DO
 
 !           Assembly
@@ -120,7 +130,7 @@
          END IF
       END DO ! e: loop
 
-      DEALLOCATE(ptr, xl, al, yl, dl, bfl, lR, lK)
+      DEALLOCATE(ptr, xl, al, yl, dl, bfl, lR, lK, fN)
 
       RETURN
       END SUBROUTINE CONSTRUCT_SHELL
@@ -938,14 +948,15 @@
       END SUBROUTINE SHELLBENDCST
 !####################################################################
 !     Construct shell mechanics for higher order elements/NURBS
-      SUBROUTINE SHELL3D (lM, g, eNoN, al, yl, dl, xl, bfl, lR, lK)
+      SUBROUTINE SHELL3D (lM, g, eNoN, nFn, fN, al, yl, dl, xl, bfl,
+     2        lR, lK)
       USE COMMOD
       USE MATFUN
       IMPLICIT NONE
       TYPE(mshType), INTENT(IN) :: lM
-      INTEGER(KIND=IKIND), INTENT(IN) :: g, eNoN
+      INTEGER(KIND=IKIND), INTENT(IN) :: g, eNoN, nFn
       REAL(KIND=RKIND), INTENT(IN) :: al(tDof,eNoN), yl(tDof,eNoN),
-     2   dl(tDof,eNoN), xl(3,eNoN), bfl(3,eNoN)
+     2   dl(tDof,eNoN), xl(3,eNoN), bfl(3,eNoN), fN(3,nFn)
       REAL(KIND=RKIND), INTENT(INOUT) :: lR(dof,eNoN),
      2   lK(dof*dof,eNoN,eNoN)
 
@@ -1284,12 +1295,14 @@ c=====================================================================
       END SUBROUTINE SHELL3D
 !####################################################################
 !     Compute stress resultants for shell elements
-      SUBROUTINE SHL_STRS_RES(lDmn, aa_0, aa_x, bb_0, bb_x, Sm, Dm)
+      SUBROUTINE SHL_STRS_RES(lDmn, nFn, fN, aa_0, aa_x, bb_0, bb_x,
+     2        Sm, Dm)
       USE COMMOD
       IMPLICIT NONE
       TYPE(dmnType), INTENT(IN) :: lDmn
+      INTEGER(KIND=IKIND), INTENT(IN) :: nFn
       REAL(KIND=RKIND), INTENT(IN) :: aa_0(2,2), aa_x(2,2), bb_0(2,2),
-     2   bb_x(2,2)
+     2   bb_x(2,2), fN(3,nFn)
       REAL(KIND=RKIND), INTENT(OUT) :: Sm(3,2), Dm(3,3,3)
 
       LOGICAL :: flag
@@ -1333,10 +1346,10 @@ c=====================================================================
 !        Get 2nd Piola-Kirchhoff and elasticity tensors
          IF (flag) THEN
 !           For incompressible materials
-            CALL GETPK2CC_SHLi(lDmn, gg_0, gg_x, Sml, Dml)
+            CALL GETPK2CC_SHLi(lDmn, nFn, fN, gg_0, gg_x, Sml, Dml)
          ELSE
 !           For compressible materials
-            CALL GETPK2CC_SHLc(lDmn, gg_0, gg_x, Sml, Dml)
+            CALL GETPK2CC_SHLc(lDmn, nFn, fN, gg_0, gg_x, Sml, Dml)
          END IF
 
          wl(1) = .5_RKIND*wh(g)*ht

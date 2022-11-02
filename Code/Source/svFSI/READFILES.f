@@ -607,6 +607,8 @@
          outPuts(1) = out_displacement
          outPuts(2) = out_velocity
          outPuts(3) = out_integ
+         ! Add some quantities similar to solid part: cauchy stress, strain boundaries, 
+         ! principal stress/strain - also for solid, von mises stress ...  
 
          CALL READLS(lSolver_CG, lEq, list)
 
@@ -2476,7 +2478,7 @@ c     2         "can be applied for Neumann boundaries only"
          lDmn%stM%isoType = stIso_Gucci
          lPtr => lSt%get(lDmn%stM%C10, "C")
          lPtr => lSt%get(lDmn%stM%bff, "bf")
-         lPtr => lSt%get(lDmn%stM%bss, "bt")
+         lPtr => lSt%get(lDmn%stM%bss, "bs")
          lPtr => lSt%get(lDmn%stM%bfs, "bfs")
          IF (nsd .NE. 3) THEN
             err = "Guccione material model is used for 3D problems "//
@@ -2552,9 +2554,9 @@ c     2         "can be applied for Neumann boundaries only"
 
 !     Check for shell model
       IF (lDmn%phys .EQ. phys_shell) THEN
-         IF (lDmn%stM%isoType .NE. stIso_nHook) THEN
-            err = "Only Neo-Hookean model is allowed for shell elements"
-         END IF
+         ! IF (lDmn%stM%isoType .NE. stIso_nHook) THEN
+         !    err = "Only Neo-Hookean model is allowed for shell elements"
+         ! END IF
 
 !        ST91 is the default and the only dilational penalty model for
 !        compressible shell elements. This is set to avoid any square-

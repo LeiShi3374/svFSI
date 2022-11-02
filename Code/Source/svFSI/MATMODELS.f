@@ -56,7 +56,7 @@
 !     Guccione
       REAL(KIND=RKIND) :: QQ, Rm(nsd,nsd), Es(nsd,nsd), RmRm(nsd,nsd,6)
 !     HGO/HO model
-      REAL(KIND=RKIND) :: Eff, Ess, Efs, fsn, kap, c4f, c4s, dc4f, dc4s,
+      REAL(KIND=RKIND) :: Eff, Ess, Efs, kap, c4f, c4s, dc4f, dc4s,
      2   Hff(nsd,nsd), Hss(nsd,nsd), Hfs(nsd,nsd)
 !     Active strain for electromechanics
       REAL(KIND=RKIND) :: Fe(nsd,nsd), Fa(nsd,nsd), Fai(nsd,nsd)
@@ -353,9 +353,6 @@
          Ess  = Inv6 - 1._RKIND
          Efs  = Inv8
 
-!        dot product: f.s
-         fsn  = NORM(fl(:,1), fl(:,2))
-
 !        Smoothed heaviside function
          c4f  = 1._RKIND / (1._RKIND + EXP(-stM%khs*Eff))
          c4s  = 1._RKIND / (1._RKIND + EXP(-stM%khs*Ess))
@@ -370,13 +367,13 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
 
 !        Isotropic + fiber-sheet interaction stress
          g1   = stM%a * EXP(stM%b*(Inv1-3._RKIND))
-         g2   = 2._RKIND * stM%afs * EXP(stM%bfs*Efs*Efs) * fsn
+         g2   = 2._RKIND * stM%afs * EXP(stM%bfs*Efs*Efs)
          Hfs  = MAT_SYMMPROD(fl(:,1), fl(:,2), nsd)
          Sb   = g1*IDm + g2*Efs*Hfs
 
 !        Isotropic + fiber-sheet interaction stiffness
          g1   = g1 * 2._RKIND*J4d*stM%b
-         g2   = g2 * 2._RKIND*J4d*fsn*
+         g2   = g2 * 2._RKIND*J4d*
      2          (1._RKIND + 2._RKIND*stM%bfs*Efs*Efs)
          CCb  = g1 * TEN_DYADPROD(IDm, IDm, nsd) +
      2          g2 * TEN_DYADPROD(Hfs, Hfs, nsd)
@@ -450,9 +447,6 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
          Ess  = Inv6 - 1._RKIND
          Efs  = Inv8
 
-!        dot product: f.s
-         fsn  = NORM(fl(:,1), fl(:,2))
-
 !        Smoothed heaviside function
          c4f  = 1._RKIND / (1._RKIND + EXP(-stM%khs*Eff))
          c4s  = 1._RKIND / (1._RKIND + EXP(-stM%khs*Ess))
@@ -492,11 +486,11 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
 !        anisotropic components need to be added
 
 !        Fiber-sheet interaction terms
-         g1   = 2._RKIND * stM%afs * EXP(stM%bfs*Efs*Efs) * fsn
+         g1   = 2._RKIND * stM%afs * EXP(stM%bfs*Efs*Efs)
          Hfs  = MAT_SYMMPROD(fl(:,1), fl(:,2), nsd)
          S    = S + (g1*Efs*Hfs)
 
-         g1   = g1 * 2._RKIND*fsn*(1._RKIND + 2._RKIND*stM%bfs*Efs*Efs)
+         g1   = g1 * 2._RKIND*(1._RKIND + 2._RKIND*stM%bfs*Efs*Efs)
          CC   = CC + (g1*TEN_DYADPROD(Hfs, Hfs, nsd))
 
 !        Fiber-fiber interaction stress + additional reinforcement (Tfa)
@@ -594,7 +588,7 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
       ! Guccione !
       REAL(KIND=RKIND) :: QQ, Rm(nsd,nsd), Es(nsd,nsd), RmRm(nsd,nsd,6)
       ! HGO, HO !
-      REAL(KIND=RKIND) :: Eff, Ess, Efs, fsn, kap, c4f, c4s, dc4f, dc4s,
+      REAL(KIND=RKIND) :: Eff, Ess, Efs, kap, c4f, c4s, dc4f, dc4s,
      2   Hff(nsd,nsd), Hss(nsd,nsd), Hfs(nsd,nsd)
 !     Active strain for electromechanics
       REAL(KIND=RKIND) :: Fe(nsd,nsd), Fa(nsd,nsd), Fai(nsd,nsd)
@@ -852,9 +846,6 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
          Ess  = Inv6 - 1._RKIND
          Efs  = Inv8
 
-!        dot product: f.s
-         fsn  = NORM(fl(:,1), fl(:,2))
-
 !        Smoothed heaviside function
          c4f  = 1._RKIND / (1._RKIND + EXP(-stM%khs*Eff))
          c4s  = 1._RKIND / (1._RKIND + EXP(-stM%khs*Ess))
@@ -869,13 +860,13 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
 
 !        Isotropic + fiber-sheet interaction stress
          g1   = stM%a * EXP(stM%b*(Inv1-3._RKIND))
-         g2   = 2._RKIND * stM%afs * EXP(stM%bfs*Efs*Efs) * fsn
+         g2   = 2._RKIND * stM%afs * EXP(stM%bfs*Efs*Efs)
          Hfs  = MAT_SYMMPROD(fl(:,1), fl(:,2), nsd)
          Sb   = g1*IDm + g2*Efs*Hfs
 
 !        Isotropic + fiber-sheet interaction stiffness
          g1   = g1 * 2._RKIND*J4d*stM%b
-         g2   = g2 * 2._RKIND*J4d*fsn*
+         g2   = g2 * 2._RKIND*J4d*
      2          (1._RKIND + 2._RKIND*stM%bfs*Efs*Efs)
          CCb  = g1 * TEN_DYADPROD(IDm, IDm, nsd) +
      2          g2 * TEN_DYADPROD(Hfs, Hfs, nsd)
@@ -946,9 +937,6 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
          Ess  = Inv6 - 1._RKIND
          Efs  = Inv8
 
-!        dot product: f.s
-         fsn  = NORM(fl(:,1), fl(:,2))
-
 !        Smoothed heaviside function
          c4f  = 1._RKIND / (1._RKIND + EXP(-stM%khs*Eff))
          c4s  = 1._RKIND / (1._RKIND + EXP(-stM%khs*Ess))
@@ -983,11 +971,11 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
 
 !        Now add anisotropic components
 !        Fiber-sheet interaction terms
-         g1   = 2._RKIND * stM%afs * EXP(stM%bfs*Efs*Efs) * fsn
+         g1   = 2._RKIND * stM%afs * EXP(stM%bfs*Efs*Efs)
          Hfs  = MAT_SYMMPROD(fl(:,1), fl(:,2), nsd)
          S    = S + (g1*Efs*Hfs)
 
-         g1   = g1 * 2._RKIND*fsn*(1._RKIND + 2._RKIND*stM%bfs*Efs*Efs)
+         g1   = g1 * 2._RKIND*(1._RKIND + 2._RKIND*stM%bfs*Efs*Efs)
          CC   = CC + (g1*TEN_DYADPROD(Hfs, Hfs, nsd))
 
 !        Fiber-fiber interaction stress + additional reinforcement (Tfa)
@@ -1047,48 +1035,37 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
       TYPE(dmnType), INTENT(IN) :: lDmn
       REAL(KIND=RKIND), INTENT(IN) :: p, Ja
       REAL(KIND=RKIND), INTENT(OUT) :: ro, bt, dro, dbt
-
       REAL(KIND=RKIND) :: Kp, r1, r2
-
       ro  = lDmn%prop(solid_density)/Ja
       bt  = 0._RKIND
       dbt = 0._RKIND
       dro = 0._RKIND
-
       Kp  = lDmn%stM%Kpen
       IF (ISZERO(Kp)) RETURN
-
       SELECT CASE (lDmn%stM%volType)
       CASE (stVol_Quad)
          r1  = 1._RKIND/(Kp - p)
-
          ro  = ro*Kp*r1
          bt  = r1
          dro = ro*r1
          dbt = r1*r1
-
       CASE (stVol_ST91)
          r1  = ro/Kp
          r2  = SQRT(p*p + Kp*Kp)
-
          ro  = r1*(p + r2)
          bt  = 1._RKIND/r2
          dro = ro*bt
          dbt = -bt*p/(p*p + Kp*Kp)
-
       CASE (stVol_M94)
          r1  = ro/Kp
          r2  = Kp + p
-
          ro  = r1*r2
          bt  = 1._RKIND/r2
          dro = r1
          dbt = -bt*bt
-
       CASE DEFAULT
          err = "Undefined volumetric material constitutive model"
       END SELECT
-
       RETURN
       END SUBROUTINE GVOLPEN
 !--------------------------------------------------------------------
@@ -1100,16 +1077,13 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
       TYPE(dmnType), INTENT(IN) :: lDmn
       REAL(KIND=RKIND), INTENT(IN)  :: detF, Je
       REAL(KIND=RKIND), INTENT(OUT) :: tauM, tauC
-
       REAL(KIND=RKIND) :: ctM, ctC, he, rho0, Em, nu, mu, lam, c
-
       he   = 0.5_RKIND * Je**(1._RKIND/REAL(nsd, KIND=RKIND))
       rho0 = lDmn%prop(solid_density)
       Em   = lDmn%prop(elasticity_modulus)
       nu   = lDmn%prop(poisson_ratio)
       ctM  = lDmn%prop(ctau_M)
       ctC  = lDmn%prop(ctau_C)
-
       mu   = 0.5_RKIND*Em / (1._RKIND + nu)
       IF (ISZERO(nu-0.5_RKIND)) THEN
          c = SQRT(mu / rho0)
@@ -1117,166 +1091,179 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
          lam = 2._RKIND*mu*nu / (1._RKIND-2._RKIND*nu)
          c = SQRT((lam + 2._RKIND*mu)/rho0)
       END IF
-
       tauM = ctM * (he/c) * (detF/rho0)
       tauC = ctC * (he*c) * (rho0/detF)
-
       RETURN
       END SUBROUTINE GETTAU
 !####################################################################
 !     Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
 !     for incompressible shell elements
-      SUBROUTINE GETPK2CC_SHLi(lDmn, gg_0, gg_x, Sml, Dml)
+      SUBROUTINE GETPK2CC_SHLi(lDmn, nfd, fl, gg_0, gg_x, Sml, Dml)
       USE MATFUN
       USE COMMOD
       IMPLICIT NONE
       TYPE(dmnType), INTENT(IN) :: lDmn
-      REAL(KIND=RKIND), INTENT(IN) :: gg_0(2,2), gg_x(2,2)
+      INTEGER(KIND=IKIND), INTENT(IN) :: nfd
+      REAL(KIND=RKIND), INTENT(IN) :: gg_0(2,2), gg_x(2,2), fl(3,nfd)  
       REAL(KIND=RKIND), INTENT(OUT) :: Sml(3), Dml(3,3)
-
-      REAL(KIND=RKIND) :: Jg2i, mu, gi_0(2,2), gi_x(2,2), S(2,2),
-     2   CC(2,2,2,2)
+      REAL(KIND=RKIND) :: Jg2i, I1, mu, gi_0(2,2), gi_x(2,2), S(2,2),
+     2   CC(2,2,2,2), SN(2,2), CCN(2,2,2,2), a, b, Inv4, Inv6, Inv8,
+     3   Eff, Ess, Efs
       TYPE(stModelType) :: stM
-
       Sml  = 0._RKIND
       Dml  = 0._RKIND
-
 !     Some preliminaries
       stM  = lDmn%stM
-
 !     Inverse of metric coefficients in shell continuum
       gi_0 = MAT_INV(gg_0, 2)
       gi_x = MAT_INV(gg_x, 2)
-
 !     Ratio of inplane Jacobian determinants
       Jg2i = MAT_DET(gg_x, 2)
       IF (ISZERO(Jg2i)) err = " Divide by zero in-plane Jacobian"//
      2   " determinant"
       Jg2i = MAT_DET(gg_0, 2) / Jg2i
+      I1 = 0._RKIND
+      DO a = 1, 2
+        DO b = 1, 2
+            I1 = I1 + gi_0(a,b)*gi_x(a,b)
+        END DO
+      END DO
 
       SELECT CASE(stM%isoType)
       CASE (stIso_nHook)
          mu = 2._RKIND * stM%C10
          S  = mu*(gi_0 - Jg2i*gi_x)
-
-         CC = 2._RKIND*mu*(TEN_DYADPROD(gi_x, gi_x, 2) +
+         CC = 2._RKIND*mu*Jg2i*(TEN_DYADPROD(gi_x, gi_x, 2) +
      2                     TEN_SYMMPROD(gi_x, gi_x, 2))
+
+      CASE (stIso_MR)
+         SN = (gi_0 - Jg2i*gi_x)
+         CCN= 2._RKIND*Jg2i*(TEN_DYADPROD(gi_x, gi_x, 2) +
+     2                     TEN_SYMMPROD(gi_x, gi_x, 2))
+
+         S  = stM%C10*SN + stM%C01*Jg2i* (gi_0 - I1*gi_x)
+     2         + stM%C01/Jg2i*gi_x
+         CC = (stM%C10 + stM%C01*I1) * CCN - stM%C01*Jg2i * 
+     2        (TEN_DYADPROD(gi_0, gi_x, 2) + 
+     3        TEN_DYADPROD(gi_x, gi_0, 2)) + stM%C01/Jg2i *
+     4        (TEN_DYADPROD(gi_x, gi_0, 2) + 
+     5        TEN_SYMMPROD(gi_x, gi_x, 2))
+
+      CASE (stIso_HGO_d)
+         IF (nfd .NE. 2) err = "Min fiber directions not defined for "//
+     2      "Holzapfel material model (2)"
+
+!        Compute fiber-based invariants
+      !    Inv4 = NORM(fl(:,1), MATMUL(C, fl(:,1)))
+      !    Inv6 = NORM(fl(:,2), MATMUL(C, fl(:,2)))
+      !    Inv8 = NORM(fl(:,1), MATMUL(C, fl(:,2)))
+
+      !    Eff  = Inv4 - 1._RKIND
+      !    Ess  = Inv6 - 1._RKIND
+      !    Efs  = Inv8
+
+         SN = (gi_0 - Jg2i*gi_x)
+         CCN= 2._RKIND*Jg2i*(TEN_DYADPROD(gi_x, gi_x, 2) +
+     2                     TEN_SYMMPROD(gi_x, gi_x, 2))
+
+         S  = stM%C10*SN + stM%C01*Jg2i* (gi_0 - I1*gi_x)
+     2         + stM%C01/Jg2i*gi_x
+         CC = (stM%C10 + stM%C01*I1) * CCN - stM%C01*Jg2i * 
+     2        (TEN_DYADPROD(gi_0, gi_x, 2) + 
+     3        TEN_DYADPROD(gi_x, gi_0, 2)) + stM%C01/Jg2i *
+     4        (TEN_DYADPROD(gi_x, gi_0, 2) + 
+     5        TEN_SYMMPROD(gi_x, gi_x, 2))
 
       CASE DEFAULT
          err = "Undefined material constitutive model"
       END SELECT
-
 !     Convert to Voigt notation
       Sml(1) = S(1,1)
       Sml(2) = S(2,2)
       Sml(3) = S(1,2)
-
       Dml(1,1) = CC(1,1,1,1)
       Dml(1,2) = CC(1,1,2,2)
       Dml(1,3) = CC(1,1,1,2)
-
       Dml(2,2) = CC(2,2,2,2)
       Dml(2,3) = CC(2,2,1,2)
-
       Dml(3,3) = CC(1,2,1,2)
-
       Dml(2,1) = Dml(1,2)
       Dml(3,1) = Dml(1,3)
       Dml(3,2) = Dml(2,3)
-
       RETURN
       END SUBROUTINE GETPK2CC_SHLi
 !--------------------------------------------------------------------
 !     Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
 !     for compressible shell elements
-      SUBROUTINE GETPK2CC_SHLc(lDmn, gg_0, gg_x, Sml, Dml)
+      SUBROUTINE GETPK2CC_SHLc(lDmn, nfd, fl, gg_0, gg_x, Sml, Dml)
       USE MATFUN
       USE COMMOD
       IMPLICIT NONE
       TYPE(dmnType), INTENT(IN) :: lDmn
-      REAL(KIND=RKIND), INTENT(IN) :: gg_0(2,2), gg_x(2,2)
+      INTEGER(KIND=IKIND), INTENT(IN) :: nfd
+      REAL(KIND=RKIND), INTENT(IN) :: gg_0(2,2), gg_x(2,2), fl(3,nfd)
       REAL(KIND=RKIND), INTENT(OUT) :: Sml(3), Dml(3,3)
-
       INTEGER(KIND=IKIND), PARAMETER :: MAXITR = 20
       REAL(KIND=RKIND), PARAMETER :: ATOL = 1E-10
-
       INTEGER(KIND=IKIND) :: itr, i, j, k, l
       REAL(KIND=RKIND) :: Jg2, J2, J23, f13, f23, trC3, C33, kap, mu,
      2   pJ, plJ, gi_x(2,2), gi_0(3,3), Ci(3,3), S(3,3), CC(3,3,3,3)
       TYPE(stModelType) :: stM
-
       Sml  = 0._RKIND
       Dml  = 0._RKIND
-
 !     Initialize tensor operations
       CALL TEN_INIT(3)
-
 !     Some preliminaries
       stM  = lDmn%stM
       kap  = stM%Kpen
       mu   = 2._RKIND * stM%C10
       f13  = 1._RKIND / 3._RKIND
       f23  = 2._RKIND / 3._RKIND
-
 !     Inverse of metric coefficients in shell continuum
       gi_x = MAT_INV(gg_x, 2)
-
       gi_0 = 0._RKIND
       gi_0(1:2,1:2) = MAT_INV(gg_0, 2)
       gi_0(3,3) = 1._RKIND
-
 !     Ratio of inplane Jacobian determinant squared
       Jg2 = MAT_DET(gg_x, 2) / MAT_DET(gg_0, 2)
-
 !     Begin Newton iterations to satisfy plane-stress condition.
 !     The objective is to find C33 that satisfies S33 = 0.
       itr = 0
       C33 = 1._RKIND
       DO
          itr  = itr + 1
-
 !        Trace (C)
          trC3 = (gg_x(1,1)*gi_0(1,1) + gg_x(1,2)*gi_0(1,2)
      2        +  gg_x(2,1)*gi_0(2,1) + gg_x(2,2)*gi_0(2,2) + C33)*f13
-
 !        Jacobian-related quantities
          J2  = Jg2*C33
          J23 = J2**(-f13)
-
 !        Inverse of curvilinear Cauchy-Green deformation tensor
          Ci(:,:) = 0._RKIND
          Ci(3,3) = 1._RKIND/C33
          Ci(1:2,1:2) = gi_x(:,:)
-
 !        Contribution from dilational penalty terms to S and CC
          pJ  = 0.5_RKIND*kap*(J2 - 1._RKIND)
          plJ = kap*J2
-
          SELECT CASE (stM%isoType)
          CASE (stIso_nHook)
 !           2nd Piola Kirchhoff stress
             S  = mu*J23*(gi_0 - trC3*Ci) + pJ*Ci
-
 !           Elasticity tensor
             CC = (mu*J23*f23*trC3 + plJ)*TEN_DYADPROD(Ci, Ci, 3)
      2         + (mu*J23*trC3 - pJ)*2._RKIND*TEN_SYMMPROD(Ci, Ci, 3)
      3         - f23*mu*J23*(TEN_DYADPROD(gi_0, Ci, 3) +
      4                       TEN_DYADPROD(Ci, gi_0, 3))
-
          CASE DEFAULT
             err = "Undefined material constitutive model"
-
          END SELECT
-
          IF (ABS(S(3,3)) .LE. ATOL) EXIT
          IF (itr .GT. MAXITR) THEN
             wrn = " Failed to converge plane-stress condition"
             EXIT
          END IF
-
          C33 = C33 - (2._RKIND*S(3,3)/CC(3,3,3,3))
       END DO
-
 !     Statically condense CC
       DO i=1, 2
          DO j=1, 2
@@ -1288,25 +1275,19 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
             END DO
          END DO
       END DO
-
 !     Convert the in-plane components to Voigt notation
       Sml(1) = S(1,1)
       Sml(2) = S(2,2)
       Sml(3) = S(1,2)
-
       Dml(1,1) = CC(1,1,1,1)
       Dml(1,2) = CC(1,1,2,2)
       Dml(1,3) = CC(1,1,1,2)
-
       Dml(2,2) = CC(2,2,2,2)
       Dml(2,3) = CC(2,2,1,2)
-
       Dml(3,3) = CC(1,2,1,2)
-
       Dml(2,1) = Dml(1,2)
       Dml(3,1) = Dml(1,3)
       Dml(3,2) = Dml(2,3)
-
       RETURN
       END SUBROUTINE GETPK2CC_SHLc
 !####################################################################
@@ -1316,9 +1297,7 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
       IMPLICIT NONE
       REAL(KIND=RKIND), INTENT(IN) :: CC(nsd,nsd,nsd,nsd)
       REAL(KIND=RKIND), INTENT(INOUT) :: Dm(nsymd,nsymd)
-
       INTEGER(KIND=IKIND) :: i, j
-
       IF (nsd .EQ. 3) THEN
          Dm(1,1) = CC(1,1,1,1)
          Dm(1,2) = CC(1,1,2,2)
@@ -1326,49 +1305,37 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
          Dm(1,4) = CC(1,1,1,2)
          Dm(1,5) = CC(1,1,2,3)
          Dm(1,6) = CC(1,1,3,1)
-
          Dm(2,2) = CC(2,2,2,2)
          Dm(2,3) = CC(2,2,3,3)
          Dm(2,4) = CC(2,2,1,2)
          Dm(2,5) = CC(2,2,2,3)
          Dm(2,6) = CC(2,2,3,1)
-
          Dm(3,3) = CC(3,3,3,3)
          Dm(3,4) = CC(3,3,1,2)
          Dm(3,5) = CC(3,3,2,3)
          Dm(3,6) = CC(3,3,3,1)
-
          Dm(4,4) = CC(1,2,1,2)
          Dm(4,5) = CC(1,2,2,3)
          Dm(4,6) = CC(1,2,3,1)
-
          Dm(5,5) = CC(2,3,2,3)
          Dm(5,6) = CC(2,3,3,1)
-
          Dm(6,6) = CC(3,1,3,1)
-
          DO i=2, 6
             DO j=1, i-1
                Dm(i,j) = Dm(j,i)
             END DO
          END DO
-
       ELSE IF (nsd .EQ. 2) THEN
          Dm(1,1) = CC(1,1,1,1)
          Dm(1,2) = CC(1,1,2,2)
          Dm(1,3) = CC(1,1,1,2)
-
          Dm(2,2) = CC(2,2,2,2)
          Dm(2,3) = CC(2,2,1,2)
-
          Dm(3,3) = CC(1,2,1,2)
-
          Dm(2,1) = Dm(1,2)
          Dm(3,1) = Dm(1,3)
          Dm(3,2) = Dm(2,3)
-
       END IF
-
       RETURN
       END SUBROUTINE CCTOVOIGT
 !####################################################################
@@ -1378,16 +1345,13 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
       IMPLICIT NONE
       TYPE(fibStrsType), INTENT(IN) :: Tfl
       REAL(KIND=RKIND), INTENT(OUT) :: g
-
       REAL(KIND=RKIND) rtmp
-
       g = 0._RKIND
       IF (BTEST(Tfl%fType, bType_std)) THEN
          g = Tfl%g
       ELSE IF (BTEST(Tfl%fType, bType_ustd)) THEN
          CALL IFFT(Tfl%gt, g, rtmp)
       END IF
-
       RETURN
       END SUBROUTINE GETFIBSTRESS
 !####################################################################
@@ -1401,24 +1365,18 @@ c     2      (EXP(stM%khs*Ess) + EXP(-stM%khs*Ess) + 2.0_RKIND)
       INTEGER(KIND=IKIND), INTENT(IN) :: nfd
       REAL(KIND=RKIND), INTENT(IN) :: gf, fl(nsd,nfd)
       REAL(KIND=RKIND), INTENT(INOUT) :: Fa(nsd,nsd)
-
       REAL(KIND=RKIND) :: gs, gn, af(nsd), as(nsd), an(nsd),
      2   IDm(nsd,nsd), Hf(nsd,nsd), Hs(nsd,nsd), Hn(nsd,nsd)
-
       af  = fl(:,1)
       as  = fl(:,2)
       an  = CROSS(fl)
-
       gn  = 4._RKIND*gf
       gs  = 1._RKIND/((1._RKIND+gf)*(1._RKIND+gn)) - 1._RKIND
-
       IDm = MAT_ID(nsd)
       Hf  = MAT_DYADPROD(af, af, nsd)
       Hs  = MAT_DYADPROD(as, as, nsd)
       Hn  = MAT_DYADPROD(an, an, nsd)
-
       Fa = IDm + gf*Hf + gs*Hs + gn*Hn
-
       RETURN
       END SUBROUTINE ACTVSTRAIN
 !####################################################################
